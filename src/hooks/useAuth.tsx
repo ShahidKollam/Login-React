@@ -1,6 +1,6 @@
 // src/hooks/useAuth.tsx
 import { useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User, signOut } from 'firebase/auth';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -14,7 +14,17 @@ export const useAuth = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, []); 
 
-  return { user, loading };
+  const logout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
+  return { user, loading, logout };
 };
