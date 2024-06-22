@@ -5,11 +5,9 @@ import OTPInput from 'react-otp-input';
 
 interface VerifyOtpProps {
   confirmationResult: ConfirmationResult;
-  onVerified: () => void;
-  onError: (message: string) => void;
 }
 
-const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult, onVerified, onError }) => {
+const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,15 +16,16 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult, onVerified, o
     try {
       setLoading(true);
       await confirmationResult.confirm(otp);
-      onVerified();
       toast.success('Phone number verified successfully!');
+      window.location.href = '/';
     } catch (err) {
       const errorMessage = (err as Error).message;
       setError(errorMessage);
-      onError(errorMessage);
       toast.error(errorMessage);
+
     } finally {
       setLoading(false);
+      setError("")
     }
   };
 
@@ -72,14 +71,17 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult, onVerified, o
       </div>
 
       {error && <p className="text-red-500 text-xs italic mb-4 text-center">{error}</p>}
+      <div className="flex justify-center">
+
 
       <button
         onClick={verifyOtp}
         className={`w-40 py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold`}
         disabled={loading}
-      >
+        >
         {loading ? 'Verifying...' : 'Verify OTP'}
       </button>
+        </div>
     </div>
   );
 };
