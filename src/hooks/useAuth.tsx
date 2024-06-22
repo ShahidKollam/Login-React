@@ -1,4 +1,3 @@
-// src/hooks/useAuth.tsx
 import { useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged, User, signOut } from 'firebase/auth';
 

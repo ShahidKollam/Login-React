@@ -7,6 +7,7 @@ import { auth } from '../firebase/setup';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import toast from 'react-hot-toast';
 import VerifyOtp from '../components/VerifyOtp';
+import { Link } from 'react-router-dom';
 
 const PhoneVerification: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -88,7 +89,10 @@ const PhoneVerification: React.FC = () => {
         {!isOtpSent && (
           <div className="mt-4 text-center">
             <p className="text-gray-700">
-              Don't have an account? <a href="/sign-up" className="text-blue-500 hover:underline">Sign up</a>
+              Don't have an account? 
+              <Link to={'/sign-up'} className="text-blue-500 hover:underline">
+              Sign up
+              </Link>
             </p>
           </div>
         )}

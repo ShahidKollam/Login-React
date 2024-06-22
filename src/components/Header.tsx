@@ -8,7 +8,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/sign-in');
   };
 
   return (
@@ -28,9 +28,15 @@ export default function Header() {
           {user ? <li>{user.phoneNumber}</li> : <li><a href="sign-in" /></li>}
 
 
-          <button onClick={handleLogout} className="text-black-700 hover:text-red-600">
+          {user ? <button
+            onClick={handleLogout}
+            className="text-black-700 hover:text-red-600">
             Logout
-          </button>
+          </button> :
+            <Link to="/sign-in">
+              <li>Login</li>
+            </Link>
+          }
 
         </ul>
       </div>
