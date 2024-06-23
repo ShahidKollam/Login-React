@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ConfirmationResult } from 'firebase/auth';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import {  doc, getDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import OTPInput from 'react-otp-input';
 import { db } from '../firebase/setup';
@@ -19,34 +19,28 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
   const verifyOtp = async () => {
     try {
       setLoading(true);
-      const result = await confirmationResult.confirm(otp);
 
-      toast.success('Phone number verified successfully!');
+      const result = await confirmationResult.confirm(otp);
       const user = result.user;
       
-      // Debugging: Check if user and user.uid are defined
       if (!user || !user.uid) {
         throw new Error('User UID is undefined');
       }
 
-      console.log('User UID:', user.uid);
-
-      const userDocRef = doc(db, 'users', user.uid);
-      console.log('UserDocRef:', userDocRef);
-
+      const userDocRef = doc(db, 'Users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
-        console.log('User exists in Firestore:', userDoc.data());
 
-        navigate('/sign-in');
+        console.log('User exists in Firestore:', userDoc.data());
+        navigate('/');
+
       } else {
         console.log('User does not exist in Firestore');
-
-        navigate('/sign-in');
+        navigate('/sign-up');
       }
 
-      toast.success('Phone number verified successfully 222!');
+      toast.success('Phone number verified successfully!');
 
     } catch (err) {
       const errorMessage = (err as Error).message;

@@ -27,6 +27,7 @@ const PhoneVerification: React.FC = () => {
     onSubmit: async (values) => {
       try {
         setLoading(true);
+        console.log(values.phoneNumber);
         
         const recaptcha = new RecaptchaVerifier(auth, 'recaptcha', {});
         const confirmation = await signInWithPhoneNumber(auth, values.phoneNumber, recaptcha);

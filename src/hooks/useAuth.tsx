@@ -13,7 +13,7 @@ export const useAuth = () => {
     });
 
     return () => unsubscribe();
-  }, []); 
+  }, []);
 
   const logout = async () => {
     const auth = getAuth();

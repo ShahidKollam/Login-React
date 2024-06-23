@@ -24,10 +24,13 @@ export default function Header() {
           <Link to="/about">
             <li>About</li>
           </Link>
-          
-          {user ? <li>{user?.phoneNumber}</li>
-            : <li><a href="sign-in" /></li>
+
+          {
+            user && (
+              <li>{user.displayName}</li>
+            )
           }
+
 
 
           {user ? <button

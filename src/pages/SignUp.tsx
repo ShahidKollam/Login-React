@@ -33,6 +33,8 @@ const RegistrationForm: React.FC = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      const phoneNumber = `91${mobNum}`;
+
       console.log(user);
       
 
@@ -41,13 +43,13 @@ const RegistrationForm: React.FC = () => {
 
         await setDoc(doc(db, 'Users', user.uid), {
           username: name,
-          phoneNumber: mobNum,
+          phoneNumber: phoneNumber,
         });
       }
 
       console.log('Document written with ID: ');
       toast('Signed up successfully')
-      navigate('/');
+      navigate('/sign-in');
     } catch (error) {
       const errorMessage = (error as Error).message;
 
