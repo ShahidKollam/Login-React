@@ -1,9 +1,10 @@
+// src/pages/PhoneVerification.tsx
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import { auth } from '../firebase/setup';
+import { auth, db } from '../firebase/setup';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import toast from 'react-hot-toast';
 import VerifyOtp from '../components/VerifyOtp';
@@ -26,11 +27,13 @@ const PhoneVerification: React.FC = () => {
     onSubmit: async (values) => {
       try {
         setLoading(true);
+        
         const recaptcha = new RecaptchaVerifier(auth, 'recaptcha', {});
         const confirmation = await signInWithPhoneNumber(auth, values.phoneNumber, recaptcha);
         setConfirmationResult(confirmation);
         setIsOtpSent(true);
         toast.success('OTP sent successfully!');
+        
       } catch (error) {
         const errorMessage = (error as Error).message;
 
@@ -44,7 +47,6 @@ const PhoneVerification: React.FC = () => {
       }
     },
   });
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -91,7 +93,7 @@ const PhoneVerification: React.FC = () => {
             <p className="text-gray-700">
               Don't have an account? 
               <Link to={'/sign-up'} className="text-blue-500 hover:underline">
-              Sign up
+                Sign up
               </Link>
             </p>
           </div>

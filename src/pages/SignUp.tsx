@@ -1,15 +1,14 @@
-// src/components/RegistrationForm.tsx
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import firebase, { db } from '../firebase/setup';
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { collection, addDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, } from 'firebase/auth';
+import {  setDoc, doc } from 'firebase/firestore';
+import { auth, db } from '../firebase/setup';
+import toast from 'react-hot-toast';
 
 const RegistrationForm: React.FC = () => {
   const navigate = useNavigate();
-  const auth = getAuth(firebase);
 
   const initialValues = {
     name: '',
@@ -28,30 +27,32 @@ const RegistrationForm: React.FC = () => {
   });
 
   const handleRegistration = async (values: any, { setSubmitting, setFieldError }: any) => {
-    console.log(values);
-    
+
     const { name, email, mobNum, password } = values;
 
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log(user);
       
-      await updateProfile(result.user, { displayName: name });
 
-      const docRef = await addDoc(collection(db, 'users'), {
-        id: result.user.uid,
-        username: name,
-        phoneNumber: mobNum,
-      });
-      console.log('Document written with ID: ', docRef.id);
-      console.log('User registered:', result.user);
-      
-      
+      if (user) {
+        await updateProfile(user, { displayName: name });
+
+        await setDoc(doc(db, 'Users', user.uid), {
+          username: name,
+          phoneNumber: mobNum,
+        });
+      }
+
+      console.log('Document written with ID: ');
+      toast('Signed up successfully')
       navigate('/');
     } catch (error) {
       const errorMessage = (error as Error).message;
 
       console.error('Registration error:', error);
-      setFieldError('confirmPassword', errorMessage); 
+      setFieldError('confirmPassword', errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -144,25 +145,6 @@ const RegistrationForm: React.FC = () => {
                   disabled={isSubmitting}
                   className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                    {/* Heroicon name: lock-closed */}
-                    <svg
-                      className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 12a2 2 0 100-4 2 2 0 000 4z"
-                      />
-                      <path
-                        fillRule="evenodd"
-                        d="M4 8V6a4 4 0 118 0v2h2a2 2 0 012 2v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5a2 2 0 012-2h2zm4-5a2 2 0 00-1.732 1H5a3 3 0 00-3 3v2h14V7a3 3 0 00-3-3h-1.268A2 2 0 0010 3zm0 1a1 1 0 011 1v2H9V5a1 1 0 011-1z"
-                      />
-                    </svg>
-                  </span>
                   Register
                 </button>
               </div>

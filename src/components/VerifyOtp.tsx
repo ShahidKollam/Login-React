@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { ConfirmationResult } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import OTPInput from 'react-otp-input';
+import { db } from '../firebase/setup';
+import { useNavigate } from 'react-router-dom';
 
 interface VerifyOtpProps {
   confirmationResult: ConfirmationResult;
@@ -11,21 +14,47 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const verifyOtp = async () => {
     try {
       setLoading(true);
-      await confirmationResult.confirm(otp);
+      const result = await confirmationResult.confirm(otp);
+
       toast.success('Phone number verified successfully!');
-      window.location.href = '/';
+      const user = result.user;
+      
+      // Debugging: Check if user and user.uid are defined
+      if (!user || !user.uid) {
+        throw new Error('User UID is undefined');
+      }
+
+      console.log('User UID:', user.uid);
+
+      const userDocRef = doc(db, 'users', user.uid);
+      console.log('UserDocRef:', userDocRef);
+
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        console.log('User exists in Firestore:', userDoc.data());
+
+        navigate('/sign-in');
+      } else {
+        console.log('User does not exist in Firestore');
+
+        navigate('/sign-in');
+      }
+
+      toast.success('Phone number verified successfully 222!');
+
     } catch (err) {
       const errorMessage = (err as Error).message;
       setError(errorMessage);
       toast.error(errorMessage);
-
     } finally {
       setLoading(false);
-      setError("")
+      setError('');
     }
   };
 
@@ -72,16 +101,14 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
 
       {error && <p className="text-red-500 text-xs italic mb-4 text-center">{error}</p>}
       <div className="flex justify-center">
-
-
-      <button
-        onClick={verifyOtp}
-        className={`w-40 py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold`}
-        disabled={loading}
+        <button
+          onClick={verifyOtp}
+          className={`w-40 py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold`}
+          disabled={loading}
         >
-        {loading ? 'Verifying...' : 'Verify OTP'}
-      </button>
-        </div>
+          {loading ? 'Verifying...' : 'Verify OTP'}
+        </button>
+      </div>
     </div>
   );
 };
