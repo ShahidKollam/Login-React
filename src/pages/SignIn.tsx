@@ -1,10 +1,9 @@
-// src/pages/PhoneVerification.tsx
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
-import { auth, db } from '../firebase/setup';
+import { auth } from '../firebase/setup';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import toast from 'react-hot-toast';
 import VerifyOtp from '../components/VerifyOtp';
@@ -27,13 +26,23 @@ const PhoneVerification: React.FC = () => {
     onSubmit: async (values) => {
       try {
         setLoading(true);
-        console.log(values.phoneNumber);
-        
+        const formattedPhoneNumber = "+" + values.phoneNumber;
         const recaptcha = new RecaptchaVerifier(auth, 'recaptcha', {});
-        const confirmation = await signInWithPhoneNumber(auth, values.phoneNumber, recaptcha);
+
+        const confirmation = await signInWithPhoneNumber(auth, formattedPhoneNumber, recaptcha);
         setConfirmationResult(confirmation);
         setIsOtpSent(true);
         toast.success('OTP sent successfully!');
+
+
+        // setLoading(true);
+        // console.log(values.phoneNumber);
+        
+        // const recaptcha = new RecaptchaVerifier(auth, 'recaptcha', {});
+        // const confirmation = await signInWithPhoneNumber(auth, values.phoneNumber, recaptcha);
+        // setConfirmationResult(confirmation);
+        // setIsOtpSent(true);
+        // toast.success('OTP sent successfully!');
         
       } catch (error) {
         const errorMessage = (error as Error).message;

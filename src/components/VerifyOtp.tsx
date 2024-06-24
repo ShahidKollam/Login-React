@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ConfirmationResult } from 'firebase/auth';
-import {  doc, getDoc } from 'firebase/firestore';
+import { ConfirmationResult, PhoneAuthProvider, signInWithCredential } from 'firebase/auth';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 import OTPInput from 'react-otp-input';
-import { db } from '../firebase/setup';
+import { auth, db } from '../firebase/setup';
 import { useNavigate } from 'react-router-dom';
 
 interface VerifyOtpProps {
@@ -16,31 +16,59 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const verifyOtp = async () => {
+  const handleVerifyOtp = async () => {
+
+
+    if (otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP.');
+      return;
+    }
+
     try {
       setLoading(true);
+      if (!confirmationResult) return;
+      const credential = PhoneAuthProvider.credential(confirmationResult.verificationId, otp);
+      const userCredential = await signInWithCredential(auth, credential);
+      const user = userCredential.user;
 
-      const result = await confirmationResult.confirm(otp);
-      const user = result.user;
-      
-      if (!user || !user.uid) {
-        throw new Error('User UID is undefined');
-      }
+      // Check if user exists in Firestore
+      const usersRef = collection(db, 'Users');
+      const q = query(usersRef, where('phoneNumber', '==', user.phoneNumber));
+      const querySnapshot = await getDocs(q);
 
-      const userDocRef = doc(db, 'Users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-
-        console.log('User exists in Firestore:', userDoc.data());
+      if (!querySnapshot.empty) {
+        // User exists, navigate to home screen
+        toast.success('Login successful! Redirecting to home...');
         navigate('/');
-
       } else {
-        console.log('User does not exist in Firestore');
-        navigate('/sign-up');
-      }
+        // User does not exist, navigate to registration screen
+        toast('User not found, please complete registration.');
+        navigate('/sign-up', { state: { uid: user.uid, phoneNumber: user.phoneNumber } });
+    }
 
-      toast.success('Phone number verified successfully!');
+      // setLoading(true);
+
+      // const result = await confirmationResult.confirm(otp);
+      // const user = result.user;
+
+      // if (!user || !user.uid) {
+      //   throw new Error('User UID is undefined');
+      // }
+
+      // const userDocRef = doc(db, 'Users', user.uid);
+      // const userDoc = await getDoc(userDocRef);
+
+      // if (userDoc.exists()) {
+
+      //   console.log('User exists in Firestore:', userDoc.data());
+      //   navigate('/');
+
+      // } else {
+      //   console.log('User does not exist in Firestore');
+      //   navigate('/sign-up', { state: { uid: user.uid, phoneNumber: user.phoneNumber } });
+      // }
+
+      // toast.success('Phone number verified successfully!');
 
     } catch (err) {
       const errorMessage = (err as Error).message;
@@ -96,7 +124,7 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
       {error && <p className="text-red-500 text-xs italic mb-4 text-center">{error}</p>}
       <div className="flex justify-center">
         <button
-          onClick={verifyOtp}
+          onClick={handleVerifyOtp}
           className={`w-40 py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold`}
           disabled={loading}
         >

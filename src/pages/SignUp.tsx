@@ -1,19 +1,27 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile, } from 'firebase/auth';
-import {  setDoc, doc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebase/setup';
 import toast from 'react-hot-toast';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+interface LocationState {
+  uid: string;
+  phoneNumber: string;
+}
 
 const RegistrationForm: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const existingUserData = location.state as LocationState | null;
 
+  console.log(existingUserData);
   const initialValues = {
     name: '',
     email: '',
-    mobNum: '',
+    phoneNumber: existingUserData ? existingUserData.phoneNumber : '',
     password: '',
     confirmPassword: ''
   };
@@ -21,44 +29,49 @@ const RegistrationForm: React.FC = () => {
   const validationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     email: Yup.string().email('Invalid email address').required('Email is required'),
-    mobNum: Yup.string().matches(/^\d{10}$/, 'Must be a valid 10-digit number').required('Mobile number is required'),
+    phoneNumber: Yup.string().matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number').required('Phone number is required'),
     password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
     confirmPassword: Yup.string().oneOf([Yup.ref('password'), undefined], 'Passwords must match').required('Confirm Password is required')
   });
 
   const handleRegistration = async (values: any, { setSubmitting, setFieldError }: any) => {
-
-    const { name, email, mobNum, password } = values;
+    //const { name, email, phoneNumber, password } = values;
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const phoneNumber = `91${mobNum}`;
-
-      console.log(user);
+      let uid;
       
+      if (existingUserData) {
+        // Handle existing user sign-up with phone number
+        uid = existingUserData.uid;
+        await setDoc(doc(db, 'Users', uid), {
+          displayName: values.name,
+          phoneNumber: existingUserData.phoneNumber,
+          email: values.email,
+        });
+        navigate('/')
 
-      if (user) {
-        await updateProfile(user, { displayName: name });
-
-        await setDoc(doc(db, 'Users', user.uid), {
-          username: name,
-          phoneNumber: phoneNumber,
+      } else {
+        // Handle normal email/password signup
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        uid = userCredential.user.uid;
+        await setDoc(doc(db, 'Users', uid), {
+          displayName: values.name,
+          phoneNumber: values.phoneNumber,
+          email: values.email,
         });
       }
-
-      console.log('Document written with ID: ');
-      toast('Signed up successfully')
+      toast.success('Sign up successful! Redirecting to home...');
       navigate('/sign-in');
+
     } catch (error) {
       const errorMessage = (error as Error).message;
-
       console.error('Registration error:', error);
       setFieldError('confirmPassword', errorMessage);
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -101,17 +114,17 @@ const RegistrationForm: React.FC = () => {
                   <ErrorMessage name="email" component="div" className="text-red-500 text-xs italic" />
                 </div>
                 <div>
-                  <label htmlFor="mobNum" className="sr-only">Mobile Number</label>
+                  <label htmlFor="phoneNumber" className="sr-only">Phone Number</label>
                   <Field
-                    id="mobNum"
-                    name="mobNum"
-                    type="text"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
                     autoComplete="tel"
                     required
                     className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                    placeholder="Mobile Number"
+                    placeholder="Phone Number"
                   />
-                  <ErrorMessage name="mobNum" component="div" className="text-red-500 text-xs italic" />
+                  <ErrorMessage name="phoneNumber" component="div" className="text-red-500 text-xs italic" />
                 </div>
                 <div>
                   <label htmlFor="password" className="sr-only">Password</label>
@@ -147,7 +160,7 @@ const RegistrationForm: React.FC = () => {
                   disabled={isSubmitting}
                   className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Register
+                  {isSubmitting ? 'Registering...' : 'Register'}
                 </button>
               </div>
             </Form>
