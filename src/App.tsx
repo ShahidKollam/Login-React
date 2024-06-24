@@ -14,6 +14,8 @@ function App() {
       <Header />
 
       <Routes>
+
+        <Route />
         <Route path='/' element={user ? <Home /> : <Navigate to={'/sign-in'} />} />
 
         <Route path='/sign-in' element={!user ? <SignIn /> : <Navigate to={'/'} />} />

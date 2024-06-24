@@ -8,6 +8,8 @@ import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'fi
 import toast from 'react-hot-toast';
 import VerifyOtp from '../components/VerifyOtp';
 import { Link } from 'react-router-dom';
+import headImg from '../assets/img_header_logo.png';
+import rightImg from '../assets/img_rectangle_20.png';
 
 const PhoneVerification: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -49,55 +51,59 @@ const PhoneVerification: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-6 rounded shadow-md w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-4 text-center">Phone Verification</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-6xl w-full flex">
+        <div className="w-1/2 p-8 flex flex-col items-start space-y-4">
+          <img src={headImg} alt="Logo" className="w-24 h-auto" />
+          <h1 className="text-3xl font-bold">Phone Verification</h1>
+          <h5 className="text-lg text-gray-600">Login to access your travelwise account</h5>
 
-        {!isOtpSent ? (
-          <form onSubmit={formik.handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
-                Phone Number
-              </label>
-              <PhoneInput
-                value={formik.values.phoneNumber}
-                onChange={(phoneNumber) => formik.setFieldValue('phoneNumber', "+" + phoneNumber)}
-                country={'in'}
-                inputProps={{
-                  name: 'phone',
-                  required: true,
-                }}
-              />
-              {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
-                <p className="text-red-500 text-xs italic">{formik.errors.phoneNumber}</p>
-              ) : null}
-              <div id='recaptcha'></div>
-            </div>
+          {!isOtpSent ? (
+            
+            <form onSubmit={formik.handleSubmit} className="w-full">
+              <div className="mb-4">
+                <label className="text-sm font-medium">Phone Number</label>
+                <PhoneInput
+                  value={formik.values.phoneNumber}
+                  onChange={(phoneNumber) => formik.setFieldValue('phoneNumber', phoneNumber)}
+                  country={'in'}
+                  inputProps={{
+                    name: 'phone',
+                    required: true,
+                  }}
+                  inputClass="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
+                />
+                {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
+                  <p className="text-red-500 text-xs italic">{formik.errors.phoneNumber}</p>
+                ) : null}
+                <div id='recaptcha'></div>
+              </div>
 
-            <div className="flex justify-center">
               <button
                 type="submit"
-                className={`w-40 py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-700'} text-white font-bold`}
+                className={` w-full py-2 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={loading}
               >
                 {loading ? 'Sending OTP...' : 'Send OTP'}
               </button>
-            </div>
-          </form>
-        ) : (
-          <VerifyOtp confirmationResult={confirmationResult!} />
-        )}
+            </form>
+          ) : (
+            <VerifyOtp confirmationResult={confirmationResult!} />
+          )}
 
-        {!isOtpSent && (
-          <div className="mt-4 text-center">
-            <p className="text-gray-700">
-              Don't have an account? 
+          {!isOtpSent && (
+            <p className="text-sm text-gray-600 mt-4">
+              Don't have an account?
               <Link to={'/sign-up'} className="text-blue-500 hover:underline">
                 Sign up
               </Link>
             </p>
-          </div>
-        )}
+          )}
+        </div>
+
+        <div className="w-1/2 flex justify-end items-center pb-48 p-10">
+          <img src={rightImg} alt="Right Image" className="w-full h-auto" />
+        </div>
       </div>
     </div>
   );
