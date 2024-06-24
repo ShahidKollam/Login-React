@@ -46,30 +46,6 @@ const VerifyOtp: React.FC<VerifyOtpProps> = ({ confirmationResult }) => {
         navigate('/sign-up', { state: { uid: user.uid, phoneNumber: user.phoneNumber } });
     }
 
-      // setLoading(true);
-
-      // const result = await confirmationResult.confirm(otp);
-      // const user = result.user;
-
-      // if (!user || !user.uid) {
-      //   throw new Error('User UID is undefined');
-      // }
-
-      // const userDocRef = doc(db, 'Users', user.uid);
-      // const userDoc = await getDoc(userDocRef);
-
-      // if (userDoc.exists()) {
-
-      //   console.log('User exists in Firestore:', userDoc.data());
-      //   navigate('/');
-
-      // } else {
-      //   console.log('User does not exist in Firestore');
-      //   navigate('/sign-up', { state: { uid: user.uid, phoneNumber: user.phoneNumber } });
-      // }
-
-      // toast.success('Phone number verified successfully!');
-
     } catch (err) {
       const errorMessage = (err as Error).message;
       setError(errorMessage);

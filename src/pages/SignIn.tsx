@@ -34,16 +34,6 @@ const PhoneVerification: React.FC = () => {
         setIsOtpSent(true);
         toast.success('OTP sent successfully!');
 
-
-        // setLoading(true);
-        // console.log(values.phoneNumber);
-        
-        // const recaptcha = new RecaptchaVerifier(auth, 'recaptcha', {});
-        // const confirmation = await signInWithPhoneNumber(auth, values.phoneNumber, recaptcha);
-        // setConfirmationResult(confirmation);
-        // setIsOtpSent(true);
-        // toast.success('OTP sent successfully!');
-        
       } catch (error) {
         const errorMessage = (error as Error).message;
 

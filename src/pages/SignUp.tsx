@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebase/setup';
 import toast from 'react-hot-toast';
@@ -39,30 +39,53 @@ const RegistrationForm: React.FC = () => {
 
     try {
       let uid;
+      let currentUser = auth.currentUser;
+      console.log(currentUser);
       
+      if (!currentUser) {
+        throw new Error('No user logged in.');
+      }
+
+
       if (existingUserData) {
         // Handle existing user sign-up with phone number
         uid = existingUserData.uid;
+
         await setDoc(doc(db, 'Users', uid), {
           displayName: values.name,
           phoneNumber: existingUserData.phoneNumber,
           email: values.email,
         });
+
+        await updateProfile(currentUser, {
+          displayName: values.name,
+        });
+
         navigate('/')
 
       } else {
-        // Handle normal email/password signup
         const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-        uid = userCredential.user.uid;
+        const user = userCredential.user;
+
+        if (!user) {
+          throw new Error('Failed to create user.');
+        }
+
+        uid = user.uid;
+
         await setDoc(doc(db, 'Users', uid), {
           displayName: values.name,
           phoneNumber: values.phoneNumber,
           email: values.email,
         });
-      }
-      toast.success('Sign up successful! Redirecting to home...');
-      navigate('/sign-in');
 
+        await updateProfile(user, {
+          displayName: values.name,
+        });
+        toast.success('Sign up successful! Redirecting to home...');
+
+        navigate('/');
+      }
     } catch (error) {
       const errorMessage = (error as Error).message;
       console.error('Registration error:', error);
