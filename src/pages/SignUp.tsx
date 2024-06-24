@@ -42,9 +42,6 @@ const RegistrationForm: React.FC = () => {
       let currentUser = auth.currentUser;
       console.log(currentUser);
       
-      if (!currentUser) {
-        throw new Error('No user logged in.');
-      }
 
 
       if (existingUserData) {
@@ -66,7 +63,8 @@ const RegistrationForm: React.FC = () => {
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
         const user = userCredential.user;
-
+        console.log(user);
+        
         if (!user) {
           throw new Error('Failed to create user.');
         }
@@ -79,9 +77,9 @@ const RegistrationForm: React.FC = () => {
           email: values.email,
         });
 
-        await updateProfile(user, {
-          displayName: values.name,
-        });
+        // await updateProfile(user, {
+        //   displayName: values.name,
+        // });
         toast.success('Sign up successful! Redirecting to home...');
 
         navigate('/');
