@@ -227,7 +227,6 @@ const RegistrationForm: React.FC = () => {
                   </label>
                 </div>
 
-                {/* Submit button */}
                 <div>
                   <button
                     type="submit"
@@ -238,7 +237,6 @@ const RegistrationForm: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Login link */}
                 <p className="text-sm text-gray-600 mt-4">
                   Already have an account? <Link to="/login" className="text-blue-500 hover:underline">Login here</Link>
                 </p>
