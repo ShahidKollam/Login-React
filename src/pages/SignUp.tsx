@@ -54,9 +54,9 @@ const RegistrationForm: React.FC = () => {
           email: values.email,
         });
 
-        await updateProfile(currentUser, {
-          displayName: values.name,
-        });
+        // await updateProfile(currentUser, {
+        //   displayName: values.name,
+        // });
 
         navigate('/')
 
